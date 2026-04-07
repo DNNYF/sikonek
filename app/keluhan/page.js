@@ -340,8 +340,8 @@ export default function KeluhanPage() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto shadow-2xl animate-slide-in">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 pt-4 pb-4 overflow-y-auto z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 max-h-[calc(100vh-2rem)] sm:max-h-[90vh] overflow-y-auto shadow-2xl animate-slide-in">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Tambah Keluhan</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
