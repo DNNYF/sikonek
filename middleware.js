@@ -10,6 +10,10 @@ function isPublicPath(pathname) {
 export async function middleware(request) {
   const { pathname } = request.nextUrl
 
+  if (process.env.NODE_ENV === 'development') {
+    return NextResponse.next()
+  }
+
   if (pathname.startsWith('/_next') || pathname.startsWith('/favicon.ico') || pathname.startsWith('/api/auth/logout')) {
     return NextResponse.next()
   }

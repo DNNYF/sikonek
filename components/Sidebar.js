@@ -15,10 +15,10 @@ import {
 } from 'lucide-react'
 
 const navigation = [
+  { name: 'Catat Pembayaran', href: '/pembayaran', icon: HandCoins, highlight: true },
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Pelanggan', href: '/pelanggan', icon: Users },
   { name: 'Tagihan', href: '/tagihan', icon: FileText },
-  { name: 'Catat Pembayaran', href: '/pembayaran', icon: HandCoins, highlight: true },
   { name: 'Keluhan', href: '/keluhan', icon: MessageCircleWarning },
   { name: 'Laporan', href: '/laporan', icon: FileBarChart },
 ]

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { formatRupiah, getMonthRange } from '@/lib/utils'
 import { FileBarChart, TrendingUp, HandCoins, Download, CircleMinus } from 'lucide-react'
@@ -19,11 +19,7 @@ export default function LaporanPage() {
   const [payments, setPayments] = useState([])
   const [expenses, setExpenses] = useState([])
 
-  useEffect(() => {
-    fetchLaporan()
-  }, [selectedMonth, selectedYear])
-
-  async function fetchLaporan() {
+  const fetchLaporan = useCallback(async () => {
     setLoading(true)
     try {
       const { start: startOfMonth, end: endOfMonth } = getMonthRange(selectedYear, selectedMonth)
@@ -74,7 +70,11 @@ export default function LaporanPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedMonth, selectedYear])
+
+  useEffect(() => {
+    fetchLaporan()
+  }, [fetchLaporan])
 
   function exportCSV() {
     if (payments.length === 0) {
@@ -92,10 +92,7 @@ export default function LaporanPage() {
       p.invoices?.billing_period ? new Date(p.invoices.billing_period).toISOString().split('T')[0] : '-',
     ])
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map((row) => row.join(',')),
-    ].join('\n')
+    const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
@@ -107,10 +104,7 @@ export default function LaporanPage() {
     document.body.removeChild(link)
   }
 
-  const months = [
-    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-  ]
+  const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
 
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i)
 
@@ -124,18 +118,14 @@ export default function LaporanPage() {
 
   return (
     <div className="p-8 animate-fade-in">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Laporan</h1>
         <p className="text-gray-500 mt-1">Rekap pembayaran dan pengeluaran bulanan</p>
       </div>
 
-      {/* Month/Year Selector */}
       <div className="flex gap-4 mb-8">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Bulan
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Bulan</label>
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
@@ -150,9 +140,7 @@ export default function LaporanPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Tahun
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Tahun</label>
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(parseInt(e.target.value))}
@@ -167,7 +155,6 @@ export default function LaporanPage() {
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5 mb-8">
         <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-md">
           <div className="flex items-center justify-between mb-2">
@@ -212,15 +199,11 @@ export default function LaporanPage() {
               <TrendingUp className={`w-5 h-5 ${summary.net >= 0 ? 'text-emerald-600' : 'text-red-600'}`} />
             </div>
           </div>
-          <p className={`text-2xl font-bold ${summary.net >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-            {formatRupiah(summary.net)}
-          </p>
+          <p className={`text-2xl font-bold ${summary.net >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{formatRupiah(summary.net)}</p>
         </div>
       </div>
 
-      {/* Tables */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Payments Table */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-lg shadow-gray-200/50 overflow-hidden">
           <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
             <div>
@@ -240,18 +223,10 @@ export default function LaporanPage() {
             <table className="min-w-full">
               <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Nama
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Jumlah
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Metode
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Tanggal
-                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jumlah</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Metode</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -268,30 +243,18 @@ export default function LaporanPage() {
                   </tr>
                 ) : (
                   payments.map((p, index) => (
-                    <tr
-                      key={p.id}
-                      className="group table-row-modern"
-                      style={{ animation: `fadeIn 0.3s ease-out ${index * 0.03}s backwards` }}
-                    >
+                    <tr key={p.id} className="group table-row-modern" style={{ animation: `fadeIn 0.3s ease-out ${index * 0.03}s backwards` }}>
                       <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900 group-hover:text-emerald-600 transition-colors">
-                          {p.customers?.full_name || '-'}
-                        </div>
+                        <div className="text-sm font-medium text-gray-900 group-hover:text-emerald-600 transition-colors">{p.customers?.full_name || '-'}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm font-semibold text-emerald-600">
-                          {formatRupiah(p.amount_paid)}
-                        </span>
+                        <span className="text-sm font-semibold text-emerald-600">{formatRupiah(p.amount_paid)}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-700 capitalize">
-                          {p.payment_method?.replace('_', ' ')}
-                        </span>
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-700 capitalize">{p.payment_method?.replace('_', ' ')}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-500">
-                          {new Date(p.paid_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </span>
+                        <span className="text-sm text-gray-500">{new Date(p.paid_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                       </td>
                     </tr>
                   ))
@@ -301,7 +264,6 @@ export default function LaporanPage() {
           </div>
         </div>
 
-        {/* Expenses Table */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-lg shadow-gray-200/50 overflow-hidden">
           <div className="px-6 py-5 border-b border-gray-100">
             <h2 className="text-lg font-semibold text-gray-900">Pengeluaran</h2>
@@ -311,18 +273,10 @@ export default function LaporanPage() {
             <table className="min-w-full">
               <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Kategori
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Deskripsi
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Jumlah
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Tanggal
-                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kategori</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Deskripsi</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jumlah</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -339,30 +293,18 @@ export default function LaporanPage() {
                   </tr>
                 ) : (
                   expenses.map((e, index) => (
-                    <tr
-                      key={e.id}
-                      className="group table-row-modern"
-                      style={{ animation: `fadeIn 0.3s ease-out ${index * 0.03}s backwards` }}
-                    >
+                    <tr key={e.id} className="group table-row-modern" style={{ animation: `fadeIn 0.3s ease-out ${index * 0.03}s backwards` }}>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-100 text-amber-700 capitalize">
-                          {e.category}
-                        </span>
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-100 text-amber-700 capitalize">{e.category}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-600 max-w-xs truncate block">
-                          {e.description || '-'}
-                        </span>
+                        <span className="text-sm text-gray-600 max-w-xs truncate block">{e.description || '-'}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm font-semibold text-amber-600">
-                          {formatRupiah(e.amount)}
-                        </span>
+                        <span className="text-sm font-semibold text-amber-600">{formatRupiah(e.amount)}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-500">
-                          {new Date(e.expense_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </span>
+                        <span className="text-sm text-gray-500">{new Date(e.expense_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                       </td>
                     </tr>
                   ))

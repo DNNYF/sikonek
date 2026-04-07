@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { formatRupiah, formatTanggal } from '@/lib/utils'
@@ -17,11 +17,7 @@ export default function DetailPelangganPage() {
   const [activeTab, setActiveTab] = useState('invoices')
   const [updating, setUpdating] = useState(false)
 
-  useEffect(() => {
-    fetchCustomerData()
-  }, [id])
-
-  async function fetchCustomerData() {
+  const fetchCustomerData = useCallback(async () => {
     try {
       const { data: customerData } = await supabase
         .from('customers')
@@ -55,7 +51,11 @@ export default function DetailPelangganPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [id])
+
+  useEffect(() => {
+    fetchCustomerData()
+  }, [fetchCustomerData])
 
   async function toggleActiveStatus() {
     if (!customer) return
@@ -88,11 +88,7 @@ export default function DetailPelangganPage() {
   }
 
   if (!customer) {
-    return (
-      <div className="p-8 text-center text-gray-500">
-        Pelanggan tidak ditemukan
-      </div>
-    )
+    return <div className="p-8 text-center text-gray-500">Pelanggan tidak ditemukan</div>
   }
 
   return (
@@ -116,9 +112,7 @@ export default function DetailPelangganPage() {
             <p className="text-sm text-gray-500">Paket</p>
             <p className="font-medium">{customer.internet_packages?.package_name || '-'}</p>
             <p className="text-sm text-gray-500">
-              {customer.internet_packages?.price
-                ? formatRupiah(customer.internet_packages.price)
-                : ''}
+              {customer.internet_packages?.price ? formatRupiah(customer.internet_packages.price) : ''}
             </p>
           </div>
           <div>
@@ -134,9 +128,7 @@ export default function DetailPelangganPage() {
             onClick={toggleActiveStatus}
             disabled={updating}
             className={`px-4 py-2 rounded-md text-sm font-medium ${
-              customer.is_active
-                ? 'bg-red-600 text-white hover:bg-red-700'
-                : 'bg-green-600 text-white hover:bg-green-700'
+              customer.is_active ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-green-600 text-white hover:bg-green-700'
             } disabled:opacity-50`}
           >
             {updating ? 'Memproses...' : customer.is_active ? 'Nonaktifkan' : 'Aktifkan'}
@@ -177,21 +169,11 @@ export default function DetailPelangganPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Periode
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Jumlah
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Jatuh Tempo
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Dibayar
-                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Periode</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jumlah</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jatuh Tempo</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dibayar</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -212,9 +194,7 @@ export default function DetailPelangganPage() {
                             year: 'numeric',
                           })}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">
-                          {formatRupiah(invoice.amount_due)}
-                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900">{formatRupiah(invoice.amount_due)}</td>
                         <td className="px-6 py-4 text-sm text-gray-500">
                           {new Date(invoice.due_date).toLocaleDateString('id-ID')}
                         </td>
@@ -222,9 +202,7 @@ export default function DetailPelangganPage() {
                           <StatusBadge status={invoice.status} />
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500">
-                          {payment
-                            ? `${formatRupiah(payment.amount_paid)} (${new Date(payment.paid_at).toLocaleDateString('id-ID')})`
-                            : '-'}
+                          {payment ? `${formatRupiah(payment.amount_paid)} (${new Date(payment.paid_at).toLocaleDateString('id-ID')})` : '-'}
                         </td>
                       </tr>
                     )
@@ -242,21 +220,11 @@ export default function DetailPelangganPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Keluhan
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Sumber
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Dilaporkan
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Ditangani Oleh
-                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Keluhan</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sumber</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dilaporkan</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ditangani Oleh</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -269,21 +237,13 @@ export default function DetailPelangganPage() {
                 ) : (
                   complaints.map((complaint) => (
                     <tr key={complaint.id}>
-                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                        {complaint.issue}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 capitalize">
-                        {complaint.source}
-                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">{complaint.issue}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500 capitalize">{complaint.source}</td>
                       <td className="px-6 py-4">
                         <StatusBadge status={complaint.status} />
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {formatTanggal(complaint.reported_at)}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {complaint.handled_by || '-'}
-                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{formatTanggal(complaint.reported_at)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{complaint.handled_by || '-'}</td>
                     </tr>
                   ))
                 )}
